@@ -1,0 +1,24 @@
+def lambda_handler(event, context):
+    import boto3
+    ec2 = boto3.client('ec2')
+    instance_detail = event['detail']
+    print instance_detail
+    instance_id = instance_detail['instance-id']
+    print instance_id
+    desc = ec2.describe_instances(InstanceIds=[instance_id])
+    print desc
+    for instance in desc['Reservations']:
+        for instances in instance['Instances']:
+            for blockdev in instances['BlockDeviceMappings']:
+                volumes =  blockdev['Ebs']['VolumeId']
+                print volumes
+                tag = ec2.create_tags(Resources=[volumes],
+                           Tags=[
+                                {
+                                'Key': 'Name',
+                                'Value': 'EBS-01'
+                                },
+                                {
+                                'Key': 'environment',
+                                'Value': 'Test'
+                                },])
